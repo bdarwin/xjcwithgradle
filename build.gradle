@@ -3,7 +3,7 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.5
+sourceCompatibility = 1.7
 
 repositories {
     mavenCentral()
@@ -20,12 +20,19 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
-task processXSDs(dependsOn:processResources) {
+
+task processXSDs() {
     System.setProperty('javax.xml.accessExternalSchema', 'all')
-    ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJCTask',
-            classpath: configurations.jaxb.asPath)
-    ant.xjc(destdir: 'src/main/java', package: "com.att.sunlight.service.domain.serviceCallResults", extension: true) {
-        schema(dir: "src/main/resources/schema/", includes: "sample1.xsd")
-        binding(dir: "src/main/resources/schema/", includes: "bindings.xml")
+    def baseDir = "$projectDir/build/generatedsources"
+    new File(baseDir).mkdirs()
+    ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJCTask', classpath: configurations.jaxb.asPath)
+    ant.xjc(destdir: baseDir, package: "com.att.sunlight.service.domain.serviceCallResults", extension: true) {
+        schema(dir: "$projectDir/src/main/resources/schema/", includes: "*.xsd")
+        binding(dir: "$projectDir/src/main/resources/schema/", includes: "bindings.xml")
+//        args(value:"")
     }
+
 }
+
+project.sourceSets.main.java.srcDirs += "build/generatedsources"
+project.compileJava.dependsOn processXSDs
