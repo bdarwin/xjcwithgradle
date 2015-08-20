@@ -1,0 +1,52 @@
+group 'xjctest'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    jaxb
+}
+
+dependencies {
+    jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.6'
+    jaxb 'com.sun.xml.bind:jaxb-impl:2.2.6'
+    jaxb 'javax.xml.bind:jaxb-api:2.2.6'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'no.nils:wsdl2java:0.6'
+    }
+}
+
+apply plugin: 'no.nils.wsdl2java'
+
+xsd2java {
+    xsdsToGenerate = [
+            ["$projectDir/src/main/resources/schema/sample1.xsd", 'no.nils.xsd2java.sample',
+             [extension: true, dir: "src/main/resources/schema/", includes: "bindings.xml"]]
+    ]
+    generatedXsdDir = file("$projectDir/generatedsources/xsd2java")
+}
+
+task processXSDs() {
+    System.setProperty('javax.xml.accessExternalSchema', 'all')
+    ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJCTask',
+            classpath: configurations.jaxb.asPath)
+    ant.xjc(destdir: 'src/main/java', package: "com.att.sunlight.service.domain.serviceCallResults", extension: true) {
+        schema(dir: "src/main/resources/schema/", includes: "sample1.xsd")
+        binding(dir: "src/main/resources/schema/", includes: "bindings.xml")
+    }
+}
