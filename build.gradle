@@ -20,28 +20,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
-
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'no.nils:wsdl2java:0.6'
-    }
-}
-
-apply plugin: 'no.nils.wsdl2java'
-
-xsd2java {
-    xsdsToGenerate = [
-            ["$projectDir/src/main/resources/schema/sample1.xsd", 'no.nils.xsd2java.sample',
-             [extension: true, dir: "src/main/resources/schema/", includes: "bindings.xml"]]
-    ]
-    generatedXsdDir = file("$projectDir/generatedsources/xsd2java")
-}
-
-task processXSDs() {
+task processXSDs(dependsOn:processResources) {
     System.setProperty('javax.xml.accessExternalSchema', 'all')
     ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJCTask',
             classpath: configurations.jaxb.asPath)
