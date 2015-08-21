@@ -14,9 +14,17 @@ configurations {
 }
 
 dependencies {
-    jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.6'
-    jaxb 'com.sun.xml.bind:jaxb-impl:2.2.6'
-    jaxb 'javax.xml.bind:jaxb-api:2.2.6'
+    jaxb(   'com.sun.xml.bind:jaxb-xjc:2.2.6',
+            'com.sun.xml.bind:jaxb-impl:2.2.6',
+            'javax.xml.bind:jaxb-api:2.2.6',
+            'org.jvnet.jaxb2_commons:jaxb2-basics-ant:0.6.0',
+            'org.jvnet.jaxb2_commons:jaxb2-basics-dist:0.6.0',
+            'org.jvnet.jaxb2_commons:jaxb2-basics:0.6.0',
+            'org.jvnet.jaxb2_commons:jaxb2-basics-annotate:0.6.0')
+
+    compile('org.jvnet.jaxb2_commons:jaxb2-basics-runtime:0.6.0',
+            'org.jvnet.jaxb2_commons:jaxb2-basics-tools:0.6.0')
+
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
@@ -25,11 +33,13 @@ task processXSDs() {
     System.setProperty('javax.xml.accessExternalSchema', 'all')
     def baseDir = "$projectDir/build/generatedsources"
     new File(baseDir).mkdirs()
-    ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJCTask', classpath: configurations.jaxb.asPath)
+    ant.taskdef(name: 'xjc', classname: 'org.jvnet.jaxb2_commons.xjc.XJC2Task', classpath: configurations.jaxb.asPath)
     ant.xjc(destdir: baseDir, package: "com.att.sunlight.service.domain.serviceCallResults", extension: true) {
         schema(dir: "$projectDir/src/main/resources/schema/", includes: "*.xsd")
-        binding(dir: "$projectDir/src/main/resources/schema/", includes: "bindings.xml")
-//        args(value:"")
+        binding(dir: "$projectDir/src/main/resources/schema/", includes: "*.xml")
+        arg(value: "-Xequals")
+        arg(value: "-XtoString")
+        arg(value: "-XhashCode")
     }
 
 }
